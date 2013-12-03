@@ -1,0 +1,86 @@
+--- origsrc/libass-0.9.11/configure.ac	2010-10-20 01:23:35.483138000 -0500
++++ src/libass-0.9.11/configure.ac	2010-10-20 01:23:05.000000000 -0500
+@@ -16,7 +16,7 @@ AM_PROG_CC_C_O
+ # Checks for header files.
+ AC_HEADER_STDC
+ AC_HEADER_STDBOOL
+-AC_CHECK_HEADERS([inttypes.h stdint.h stdlib.h string.h sys/time.h unistd.h iconv.h])
++AC_CHECK_HEADERS([inttypes.h stdint.h stdlib.h string.h sys/time.h unistd.h])
+ 
+ # Checks for typedefs, structures, and compiler characteristics.
+ AC_C_CONST
+@@ -30,7 +30,7 @@ AC_TYPE_UINT8_T
+ AC_CHECK_FUNCS([mkdir strcasecmp strdup strtol])
+ 
+ # Checks for libraries.
+-AC_SEARCH_LIBS([iconv_open], [iconv], AC_DEFINE(CONFIG_ICONV, 1, [use iconv]))
++AM_ICONV
+ AC_CHECK_LIB([m], [fabs])
+ 
+ # Check for libraries via pkg-config
+--- origsrc/libass-0.9.11/libass/Makefile.am	2010-10-20 01:23:35.483138000 -0500
++++ src/libass-0.9.11/libass/Makefile.am	2010-10-20 01:23:05.000000000 -0500
+@@ -13,6 +13,7 @@ libass_la_SOURCES = ass.c ass_cache.c as
+                     ass_parse.c ass_parse.h ass_render_api.c ass_strtod.c
+ libass_la_LDFLAGS = -version-info $(LIBASS_LT_CURRENT):$(LIBASS_LT_REVISION):$(LIBASS_LT_AGE)
+ libass_la_LDFLAGS += -export-symbols $(srcdir)/libass.sym
++libass_la_LIBADD = $(LTLIBICONV)
+ 
+ assheadersdir = $(includedir)/ass
+ dist_assheaders_HEADERS = ass.h ass_types.h
+--- origsrc/libass-0.9.11/libass/ass.c	2010-10-20 01:23:35.493138000 -0500
++++ src/libass-0.9.11/libass/ass.c	2010-10-20 01:23:22.763191100 -0500
+@@ -31,7 +31,7 @@
+ #include <unistd.h>
+ #include <inttypes.h>
+ 
+-#ifdef CONFIG_ICONV
++#ifdef HAVE_ICONV
+ #include <iconv.h>
+ #endif
+ 
+@@ -911,7 +911,7 @@ void ass_flush_events(ASS_Track *track)
+     }
+ }
+ 
+-#ifdef CONFIG_ICONV
++#ifdef HAVE_ICONV
+ /** \brief recode buffer to utf-8
+  * constraint: codepage != 0
+  * \param data pointer to text buffer
+@@ -948,7 +948,7 @@ static char *sub_recode(ASS_Library *lib
+         size_t osize = size;
+         size_t ileft = size;
+         size_t oleft = size - 1;
+-        char *ip;
++        ICONV_CONST char *ip;
+         char *op;
+         size_t rc;
+         int clear = 0;
+@@ -1093,7 +1093,7 @@ ASS_Track *ass_read_memory(ASS_Library *
+     if (!buf)
+         return 0;
+ 
+-#ifdef CONFIG_ICONV
++#ifdef HAVE_ICONV
+     if (codepage) {
+         buf = sub_recode(library, buf, bufsize, codepage);
+         if (!buf)
+@@ -1123,7 +1123,7 @@ static char *read_file_recode(ASS_Librar
+     buf = read_file(library, fname, &bufsize);
+     if (!buf)
+         return 0;
+-#ifdef CONFIG_ICONV
++#ifdef HAVE_ICONV
+     if (codepage) {
+         char *tmpbuf = sub_recode(library, buf, bufsize, codepage);
+         free(buf);
+@@ -1179,7 +1179,7 @@ int ass_read_styles(ASS_Track *track, ch
+     buf = read_file(track->library, fname, &sz);
+     if (!buf)
+         return 1;
+-#ifdef CONFIG_ICONV
++#ifdef HAVE_ICONV
+     if (codepage) {
+         char *tmpbuf;
+         tmpbuf = sub_recode(track->library, buf, sz, codepage);
