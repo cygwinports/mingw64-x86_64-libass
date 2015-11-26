@@ -2,17 +2,15 @@ CROSS_HOST="x86_64-w64-mingw32"
 inherit cross
 
 NAME="mingw64-x86_64-libass"
-VERSION=0.10.1
+VERSION=0.12.3
 RELEASE=1
 CATEGORY="Devel"
 SUMMARY="SSA/ASS subtitle rendering library for Win64 toolchain"
 DESCRIPTION="LibASS is a portable library for SSA/ASS (Substation Alpha)
 subtitle rendering."
-HOMEPAGE="http://code.google.com/p/libass/"
-SRC_URI="http://libass.googlecode.com/files/libass-${VERSION}.tar.xz"
+HOMEPAGE="https://github.com/libass/libass/"
+SRC_URI="${HOMEPAGE}/archive/${VERSION}/libass-${VERSION}.tar.gz"
 SRC_DIR="libass-${VERSION}"
 PATCH_URI="
-	0.9.11-no-undefined.patch
 	0.9.11-iconv.patch
-	0.9.5-vpath.patch
 "
